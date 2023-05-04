@@ -61,18 +61,22 @@ def get_user(user_id):
     if auth_user_id is None:
         return jsonify({"message": "Authentication Failed"}), 401
 
-    if user_id not in users:
+    if user_id != auth_user_id:
+        return jsonify({"message": "Forbidden"}), 403
+
+    user = users.get(user_id)
+    if user is None:
         return jsonify({"message": "No user found"}), 404
 
-    user = users[user_id]
-    return jsonify({
+    response = {
         "message": "user details by user_id",
         "user": {
             "user_id": user_id,
-            "nickname": user.get("nickname", user_id),
-            "comment": user.get("comment", "")
+            "nickname": user["nickname"],
+            "comment": user["comment"]
         }
-    }), 200
+    }
+    return jsonify(response), 200
 
 @app.route('/users/<user_id>', methods=['PATCH'])
 def patch_user(user_id):
