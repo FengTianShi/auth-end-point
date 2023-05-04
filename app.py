@@ -1,11 +1,18 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-@app.route('/users/<int:user_id>')
-def get_user(user_id):
-    user = {'id': user_id, 'name': 'John Doe', 'email': 'john.doe@example.com'}
-    return jsonify(user)
+@app.route('/hello', methods=['GET'])
+def hello():
+    return jsonify({'message': 'Hello, World!'})
+
+@app.route('/add', methods=['POST'])
+def add():
+    data = request.get_json()
+    num1 = data['num1']
+    num2 = data['num2']
+    result = num1 + num2
+    return jsonify({'result': result})
 
 if __name__ == '__main__':
     app.run()
