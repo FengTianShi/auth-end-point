@@ -73,7 +73,7 @@ def get_user(user_id):
         "user": {
             "user_id": user_id,
             "nickname": user["nickname"],
-            "comment": user["comment"]
+            "comment": user["comment"] if "comment" in user else ""
         }
     }
     return jsonify(response), 200
