@@ -74,5 +74,44 @@ def get_user(user_id):
         }
     }), 200
 
+@app.route('/users/<user_id>', methods=['PATCH'])
+def patch_user(user_id):
+    auth_user_id = authenticate_user(request.headers.get('Authorization'))
+    if auth_user_id is None:
+        return jsonify({"message": "Authentication Failed"}), 401
+
+    if auth_user_id != user_id:
+        return jsonify({"message": "Forbidden"}), 403
+
+    if user_id not in users:
+        return jsonify({"message": "No user found"}), 404
+
+    data = request.get_json()
+
+    if "user_id" in data or "password" in data:
+        return jsonify({"message": "user updation failed", "cause": "not updatable user_id and password"}), 400
+
+    if "nickname" not in data and "comment" not in data:
+        return jsonify({"message": "user updation failed", "cause": "required nickname or comment"}), 400
+
+    if "nickname" in data:
+        if len(data["nickname"]) > 30:
+            return jsonify({"message": "user updation failed", "cause": "nickname is too long"}), 400
+        users[user_id]["nickname"] = data["nickname"] or user_id
+
+    if "comment" in data:
+        if len(data["comment"]) > 100:
+            return jsonify({"message": "user updation failed", "cause": "comment is too long"}), 400
+        users[user_id]["comment"] = data["comment"]
+
+    user = users[user_id]
+    return jsonify({
+        "message": "user successfully updated",
+        "user": {
+            "nickname": user.get("nickname", user_id),
+            "comment": user.get("comment", "")
+        }
+    }), 200
+
 if __name__ == '__main__':
     app.run()
