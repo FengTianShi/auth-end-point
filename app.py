@@ -113,5 +113,15 @@ def patch_user(user_id):
         }
     }), 200
 
+@app.route('/close', methods=['POST'])
+def close_account():
+    auth_user_id = authenticate_user(request.headers.get('Authorization'))
+    if auth_user_id is None:
+        return jsonify({"message": "Authentication Failed"}), 401
+
+    del users[auth_user_id]
+
+    return jsonify({"message": "Account and user successfully removed"}), 200
+
 if __name__ == '__main__':
     app.run()
