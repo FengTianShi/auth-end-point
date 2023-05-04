@@ -16,6 +16,21 @@ def validate_password(password):
         return False
     return re.match("^[ -~]+$", password) is not None
 
+def authenticate_user(auth_header):
+    if not auth_header or not auth_header.startswith('Basic '):
+        return None
+
+    try:
+        auth_info = base64.b64decode(auth_header[6:]).decode('utf-8')
+        user_id, password = auth_info.split(':', 1)
+    except Exception:
+        return None
+
+    if user_id in users and users[user_id]['password'] == password:
+        return user_id
+
+    return None
+
 @app.route('/signup', methods=['POST'])
 def signup():
     user_id = request.json.get('user_id')
@@ -39,6 +54,25 @@ def signup():
     }
 
     return jsonify({"message": "Account successfully created", "user": {"user_id": user_id, "nickname": user_id}}), 200
+
+@app.route('/users/<user_id>', methods=['GET'])
+def get_user(user_id):
+    auth_user_id = authenticate_user(request.headers.get('Authorization'))
+    if auth_user_id is None:
+        return jsonify({"message": "Authentication Failed"}), 401
+
+    if user_id not in users:
+        return jsonify({"message": "No user found"}), 404
+
+    user = users[user_id]
+    return jsonify({
+        "message": "user details by user_id",
+        "user": {
+            "user_id": user_id,
+            "nickname": user.get("nickname", user_id),
+            "comment": user.get("comment", "")
+        }
+    }), 200
 
 if __name__ == '__main__':
     app.run()
